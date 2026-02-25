@@ -1,24 +1,15 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Calendar, Tag, ArrowLeft, Pencil } from "lucide-react";
-import { getPostBySlug, getAllPosts } from "@/lib/db";
+import { getPostBySlug, getAllPosts, getAllAvailableTags } from "@/lib/db";
 import { formatDate } from "@/lib/posts";
 import { isAdmin } from "@/lib/auth";
 import { deletePostAction } from "@/app/actions";
 import DeleteButton from "@/app/components/DeleteButton";
 import MarkdownRenderer from "@/app/components/MarkdownRenderer";
+import { buildTagColorMap } from "@/lib/tagColors";
 
 export const dynamic = "force-dynamic";
-
-const tagColors: Record<string, string> = {
-  "Power BI": "bg-purple-500/15 text-purple-400 border-purple-500/25",
-  SAP: "bg-blue-500/15 text-blue-400 border-blue-500/25",
-  Migration: "bg-orange-500/15 text-orange-400 border-orange-500/25",
-  "Lessons Learned": "bg-amber-500/15 text-amber-400 border-amber-500/25",
-  Fails: "bg-red-500/15 text-red-400 border-red-500/25",
-  Wins: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
-  Teambuilding: "bg-pink-500/15 text-pink-400 border-pink-500/25",
-};
 
 export default async function BlogPostPage({
   params,
@@ -29,7 +20,8 @@ export default async function BlogPostPage({
   const post = getPostBySlug(slug);
   if (!post) notFound();
 
-  const admin = await isAdmin();
+  const [admin, tagEntries] = await Promise.all([isAdmin(), Promise.resolve(getAllAvailableTags())]);
+  const tagColorMap = buildTagColorMap(tagEntries);
   const deleteWithSlug = deletePostAction.bind(null, slug);
 
   const related = getAllPosts()
@@ -69,7 +61,7 @@ export default async function BlogPostPage({
             <span
               key={tag}
               className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                tagColors[tag] ?? "bg-purple-500/15 text-purple-400 border-purple-500/25"
+                tagColorMap[tag] ?? "bg-purple-500/15 text-purple-400 border-purple-500/25"
               }`}
             >
               <Tag className="h-2.5 w-2.5" />
@@ -86,10 +78,6 @@ export default async function BlogPostPage({
           <span className="flex items-center gap-1.5">
             <Calendar className="h-4 w-4" />
             {formatDate(post.date)}
-          </span>
-          <span className="text-gray-700">·</span>
-          <span>
-            {Math.max(1, Math.ceil(post.content.split(" ").length / 200))} min read
           </span>
         </div>
 

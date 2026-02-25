@@ -1,0 +1,52 @@
+{
+  "name": "Rizwan Hussain",
+  "role": "IT Intern",
+  "period": "Stage ",
+  "linkedinUrl": "https://www.linkedin.com/in/rizwan-ali-hussain",
+  "company": "ADB Safegate",
+  "location": "Zaventem, Belgium",
+  "locationSub": "On-site",
+  "jobTitle": "IT Intern",
+  "jobSub": "Stage ",
+  "duration": "Feb – Jun 2026",
+  "durationSub": "5 months",
+  "story": [
+    "I'm a student currently completing my Stage/WPL internship as part of my ICT programme. This blog documents what I'm learning in a real business environment — working with Power BI, navigating SAP, and exploring cloud platform integrations.",
+    "Before this internship, most of what I knew came from coursework. Now I'm working with real data, real systems, and real deadlines alongside professionals who use these tools every day.",
+    "I started this blog to hold myself accountable and to create an honest record of the internship — the things that clicked, the things that didn't, and everything in between."
+  ],
+  "skills": [
+    {
+      "label": "Power BI ",
+      "level": 60
+    },
+    {
+      "label": "SAP (P2P, MM, basics)",
+      "level": 50
+    },
+    {
+      "label": "Excel & Power Query",
+      "level": 75
+    },
+    {
+      "label": "Cloud Platform Integration",
+      "level": 40
+    },
+    {
+      "label": "Process Mapping",
+      "level": 55
+    },
+    {
+      "label": "Stakeholder Communication",
+      "level": 70
+    }
+  ],
+  "learningGoals": [
+    "Build functional Power BI dashboards from real business data",
+    "Understand the SAP Purchase-to-Pay and core ERP processes",
+    "Understand cloud platform integration and how services connect to on-premise systems",
+    "Collaborate effectively with different departments and stakeholders",
+    "Develop analytical thinking and business process awareness",
+    "Build a portfolio of documented, real-world internship work"
+  ]
+}

@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Sparkles, BarChart3, Database, ArrowLeftRight } from "lucide-react";
+import { ArrowRight, BookOpen, Sparkles, BarChart3, Database, Cloud } from "lucide-react";
 import BlogPostCard from "./components/BlogPostCard";
-import { getAllPosts, getFeaturedPost } from "@/lib/db";
+import { getAllPosts, getFeaturedPost, getAllAvailableTags } from "@/lib/db";
+import { buildTagColorMap } from "@/lib/tagColors";
 
 export const dynamic = "force-dynamic";
 
@@ -21,18 +22,19 @@ const highlights = [
     bg: "bg-blue-500/10 border-blue-500/20",
   },
   {
-    icon: ArrowLeftRight,
-    label: "Migration Flows",
-    desc: "Understanding data migration processes, mapping, and what it takes to move systems safely.",
-    color: "text-orange-400",
-    bg: "bg-orange-500/10 border-orange-500/20",
+    icon: Cloud,
+    label: "Cloud Platform Integration",
+    desc: "Exploring cloud services and how they connect with on-premise systems in a real business environment.",
+    color: "text-cyan-400",
+    bg: "bg-cyan-500/10 border-cyan-500/20",
   },
 ];
 
 export default async function HomePage() {
   const allPosts = getAllPosts();
   const featured = getFeaturedPost();
-  const latest = allPosts.slice(0, 3);
+  const latest = allPosts.slice(0, 1);
+  const tagColorMap = buildTagColorMap(getAllAvailableTags());
 
   return (
     <div className="space-y-20">
@@ -45,7 +47,7 @@ export default async function HomePage() {
         <div className="relative flex flex-col items-center text-center gap-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-sm font-medium text-purple-300">
             <Sparkles className="h-3.5 w-3.5" />
-            Stage / WPL Internship 2026
+            Internship 2026
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-tight">
             Every Sprint.{" "}
@@ -54,9 +56,9 @@ export default async function HomePage() {
             Documented.
           </h1>
           <p className="max-w-2xl text-base sm:text-lg text-gray-400 leading-relaxed">
-            Welcome to my internship portfolio blog. I&apos;m documenting the full
-            journey of my Stage/WPL placement — learning Power BI, navigating SAP,
-            and understanding migration flows in a real business environment.
+            Welcome to my internship portfolio blog. I&apos;m documenting the
+            journey of my internship. Where I am learning Power BI, navigating SAP,
+            and exploring cloud platform integrations in a real business environment.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -81,7 +83,7 @@ export default async function HomePage() {
       <section>
         <div className="mb-8 text-center">
           <h2 className="text-2xl font-bold text-white">What You&apos;ll Find Here</h2>
-          <p className="mt-2 text-sm text-gray-500">No theory. Just real work from a real internship.</p>
+
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           {highlights.map(({ icon: Icon, label, desc, color, bg }) => (
@@ -110,7 +112,7 @@ export default async function HomePage() {
             All posts <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        <BlogPostCard post={featured} featured />
+        <BlogPostCard post={featured} featured tagColorMap={tagColorMap} />
       </section>
       )}
 
@@ -125,9 +127,9 @@ export default async function HomePage() {
             View all <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-3">
           {latest.map((post) => (
-            <BlogPostCard key={post.slug} post={post} />
+            <BlogPostCard key={post.slug} post={post} tagColorMap={tagColorMap} />
           ))}
         </div>
       </section>
@@ -139,7 +141,7 @@ export default async function HomePage() {
         <div className="relative">
           <h2 className="text-2xl font-bold text-white sm:text-3xl">Follow the Journey</h2>
           <p className="mt-3 text-gray-400 max-w-lg mx-auto">
-            New posts every week documenting progress, setbacks, and everything in between during my Stage/WPL placement.
+            New posts every week documenting progress, setbacks, and everything in between during my intership.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link

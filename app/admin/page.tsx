@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/auth";
-import { getAllPosts } from "@/lib/db";
+import { getAllPostsAdmin } from "@/lib/db";
 import { formatDate } from "@/lib/posts";
 import { logoutAction } from "@/app/actions";
 import { PlusCircle, Pencil, LogOut, FileText, Tags } from "lucide-react";
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   if (!(await isAdmin())) redirect("/admin/login");
 
-  const posts = getAllPosts();
+  const posts = getAllPostsAdmin();
 
   return (
     <div className="space-y-6">

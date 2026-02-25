@@ -10,6 +10,9 @@ import {
   slugify,
   addTag,
   deleteTag,
+  updateTagColor,
+  saveAbout,
+  type AboutData,
 } from "@/lib/db";
 import {
   verifyPassword,
@@ -110,8 +113,16 @@ export async function deletePostAction(slug: string) {
 
 export async function addTagAction(formData: FormData) {
   if (!(await isAdmin())) redirect("/admin/login");
-  const tag = formData.get("tag")?.toString().trim() ?? "";
-  if (tag) addTag(tag);
+  const name  = formData.get("tag")?.toString().trim()   ?? "";
+  const color = formData.get("color")?.toString().trim() ?? "purple";
+  if (name) addTag(name, color);
+  revalidatePath("/admin/tags");
+}
+
+export async function updateTagColorAction(name: string, formData: FormData) {
+  if (!(await isAdmin())) redirect("/admin/login");
+  const color = formData.get("color")?.toString().trim() ?? "purple";
+  updateTagColor(name, color);
   revalidatePath("/admin/tags");
 }
 
@@ -119,4 +130,12 @@ export async function deleteTagAction(tag: string) {
   if (!(await isAdmin())) redirect("/admin/login");
   deleteTag(tag);
   revalidatePath("/admin/tags");
+}
+
+// ── About ─────────────────────────────────────────────────────────────────────
+
+export async function saveAboutAction(data: AboutData) {
+  if (!(await isAdmin())) redirect("/admin/login");
+  saveAbout(data);
+  revalidatePath("/about");
 }

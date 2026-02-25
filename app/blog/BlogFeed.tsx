@@ -4,37 +4,43 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Search, Tag, X } from "lucide-react";
 import BlogPostCard from "@/app/components/BlogPostCard";
-import type { Post, Tag as PostTag } from "@/lib/posts";
-
-const tagColors: Record<string, string> = {
-  "Power BI": "bg-purple-500/15 text-purple-400 border-purple-500/30 hover:bg-purple-500/25",
-  SAP: "bg-blue-500/15 text-blue-400 border-blue-500/30 hover:bg-blue-500/25",
-  Migration: "bg-orange-500/15 text-orange-400 border-orange-500/30 hover:bg-orange-500/25",
-  "Lessons Learned": "bg-amber-500/15 text-amber-400 border-amber-500/30 hover:bg-amber-500/25",
-  Fails: "bg-red-500/15 text-red-400 border-red-500/30 hover:bg-red-500/25",
-  Wins: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25",
-  Teambuilding: "bg-pink-500/15 text-pink-400 border-pink-500/30 hover:bg-pink-500/25",
-};
-
-const activeTagColors: Record<string, string> = {
-  "Power BI": "bg-purple-500/30 text-purple-300 border-purple-400/60",
-  SAP: "bg-blue-500/30 text-blue-300 border-blue-400/60",
-  Migration: "bg-orange-500/30 text-orange-300 border-orange-400/60",
-  "Lessons Learned": "bg-amber-500/30 text-amber-300 border-amber-400/60",
-  Fails: "bg-red-500/30 text-red-300 border-red-400/60",
-  Wins: "bg-emerald-500/30 text-emerald-300 border-emerald-400/60",
-  Teambuilding: "bg-pink-500/30 text-pink-300 border-pink-400/60",
-};
+import type { Post } from "@/lib/posts";
+import {
+  type TagEntry,
+  buildTagColorMap,
+  getFilterCls,
+  getFilterActiveCls,
+} from "@/lib/tagColors";
 
 type Props = {
   posts: Post[];
-  allTags: PostTag[];
+  tagEntries: TagEntry[];
   isAdmin: boolean;
 };
 
-export default function BlogFeed({ posts, allTags, isAdmin }: Props) {
-  const [activeTags, setActiveTags] = useState<PostTag[]>([]);
+// Internship starts Monday 2 Feb 2026
+const INTERNSHIP_START = new Date("2026-02-02T00:00:00.000Z");
+
+function getWeekNumber(dateStr: string): number {
+  const d = new Date(dateStr + "T00:00:00.000Z");
+  const diffMs = d.getTime() - INTERNSHIP_START.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  return Math.floor(diffDays / 7) + 1;
+}
+
+function weekDateRange(weekNum: number): string {
+  const start = new Date(INTERNSHIP_START.getTime() + (weekNum - 1) * 7 * 24 * 60 * 60 * 1000);
+  const end = new Date(start.getTime() + 6 * 24 * 60 * 60 * 1000);
+  const fmt = (d: Date) =>
+    d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
+export default function BlogFeed({ posts, tagEntries, isAdmin }: Props) {
+  const [activeTags, setActiveTags] = useState<string[]>([]);
   const [search, setSearch] = useState("");
+
+  const tagColorMap = useMemo(() => buildTagColorMap(tagEntries), [tagEntries]);
 
   const filtered = useMemo(
     () =>
@@ -51,13 +57,27 @@ export default function BlogFeed({ posts, allTags, isAdmin }: Props) {
     [activeTags, search, posts]
   );
 
-  const toggleTag = (tag: PostTag) =>
+  const toggleTag = (tag: string) =>
     setActiveTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
 
   const hasFilters = activeTags.length > 0 || search.trim() !== "";
-  const clear = () => { setActiveTags([]); setSearch(""); };
+  const clear = () => {
+    setActiveTags([]);
+    setSearch("");
+  };
+
+  // Group filtered posts by week number (descending)
+  const grouped = useMemo(() => {
+    const map = new Map<number, Post[]>();
+    for (const post of filtered) {
+      const wk = getWeekNumber(post.date);
+      if (!map.has(wk)) map.set(wk, []);
+      map.get(wk)!.push(post);
+    }
+    return Array.from(map.entries()).sort((a, b) => b[0] - a[0]);
+  }, [filtered]);
 
   return (
     <div className="space-y-8">
@@ -66,7 +86,7 @@ export default function BlogFeed({ posts, allTags, isAdmin }: Props) {
         <div>
           <h1 className="text-3xl font-extrabold text-white">The Blog</h1>
           <p className="mt-1 text-sm text-gray-500">
-            {posts.length} posts documenting my Stage/WPL internship journey.
+            {posts.length} post{posts.length !== 1 ? "s" : ""} documenting my Stage/WPL internship journey.
           </p>
         </div>
         {isAdmin && (
@@ -91,7 +111,10 @@ export default function BlogFeed({ posts, allTags, isAdmin }: Props) {
             className="w-full rounded-xl border border-white/8 bg-white/4 py-2.5 pl-9 pr-4 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30"
           />
           {search && (
-            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+            >
               <X className="h-4 w-4" />
             </button>
           )}
@@ -104,25 +127,26 @@ export default function BlogFeed({ posts, allTags, isAdmin }: Props) {
               Filter by tag
             </p>
             {hasFilters && (
-              <button onClick={clear} className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1">
+              <button
+                onClick={clear}
+                className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1"
+              >
                 <X className="h-3 w-3" /> Clear all
               </button>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            {allTags.map((tag) => {
-              const isActive = activeTags.includes(tag);
-              const cls = isActive
-                ? activeTagColors[tag] ?? "bg-purple-500/30 text-purple-300 border-purple-400/60"
-                : tagColors[tag] ?? "bg-purple-500/15 text-purple-400 border-purple-500/30 hover:bg-purple-500/25";
+            {tagEntries.map(({ name, color }) => {
+              const isActive = activeTags.includes(name);
+              const cls = isActive ? getFilterActiveCls(color) : getFilterCls(color);
               return (
                 <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
+                  key={name}
+                  onClick={() => toggleTag(name)}
                   className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${cls}`}
                 >
                   {isActive && <span className="mr-1">✓</span>}
-                  {tag}
+                  {name}
                 </button>
               );
             })}
@@ -140,11 +164,21 @@ export default function BlogFeed({ posts, allTags, isAdmin }: Props) {
         )}
       </p>
 
-      {/* Grid */}
-      {filtered.length > 0 ? (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((post) => (
-            <BlogPostCard key={post.slug} post={post} />
+      {/* Posts grouped by week */}
+      {grouped.length > 0 ? (
+        <div className="space-y-10">
+          {grouped.map(([weekNum, weekPosts]) => (
+            <section key={weekNum}>
+              <div className="mb-4 flex items-baseline gap-3">
+                <h2 className="text-xl font-bold text-white">Week {weekNum}</h2>
+                <span className="text-xs text-gray-500">{weekDateRange(weekNum)}</span>
+              </div>
+              <div className="flex flex-col gap-3">
+                {weekPosts.map((post) => (
+                  <BlogPostCard key={post.slug} post={post} tagColorMap={tagColorMap} />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       ) : (
@@ -152,7 +186,10 @@ export default function BlogFeed({ posts, allTags, isAdmin }: Props) {
           <div className="mb-3 text-4xl">🔍</div>
           <p className="font-semibold text-white">No posts found</p>
           <p className="mt-1 text-sm text-gray-500">Try adjusting your filters or search.</p>
-          <button onClick={clear} className="mt-4 rounded-lg bg-purple-600/20 border border-purple-500/30 px-4 py-2 text-sm text-purple-400 hover:bg-purple-600/30">
+          <button
+            onClick={clear}
+            className="mt-4 rounded-lg bg-purple-600/20 border border-purple-500/30 px-4 py-2 text-sm text-purple-400 hover:bg-purple-600/30"
+          >
             Clear filters
           </button>
         </div>

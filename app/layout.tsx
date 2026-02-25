@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "StageBlog — Internship Portfolio",
   description:
-    "A professional internship portfolio blog documenting the journey through Stage/WPL — code, lessons learned, wins, and honest fails.",
+    "A professional internship portfolio blog documenting the journey, lessons learned, wins, and honest fails.",
 };
 
 export default function RootLayout({
@@ -37,9 +37,7 @@ export default function RootLayout({
           <p>
             Built with{" "}
             <span className="text-purple-400">Next.js</span> &{" "}
-            <span className="text-purple-400">Tailwind CSS</span> during
-            internship —{" "}
-            <span className="text-gray-500">Stage/WPL 2026</span>
+            <span className="text-purple-400">Tailwind CSS</span> during internship
           </p>
         </footer>
       </body>

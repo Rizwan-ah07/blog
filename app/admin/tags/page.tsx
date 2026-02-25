@@ -2,20 +2,11 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/auth";
 import { getAllAvailableTags } from "@/lib/db";
-import { addTagAction, deleteTagAction } from "@/app/actions";
+import { addTagAction, updateTagColorAction, deleteTagAction } from "@/app/actions";
+import { COLOR_PRESETS, getCardCls } from "@/lib/tagColors";
 import { ArrowLeft, Tags, X, Plus } from "lucide-react";
 
 export const dynamic = "force-dynamic";
-
-const TAG_COLORS: Record<string, string> = {
-  "Power BI": "bg-purple-500/15 text-purple-400 border-purple-500/25",
-  SAP: "bg-blue-500/15 text-blue-400 border-blue-500/25",
-  Migration: "bg-orange-500/15 text-orange-400 border-orange-500/25",
-  "Lessons Learned": "bg-amber-500/15 text-amber-400 border-amber-500/25",
-  Fails: "bg-red-500/15 text-red-400 border-red-500/25",
-  Wins: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
-  Teambuilding: "bg-pink-500/15 text-pink-400 border-pink-500/25",
-};
 
 export default async function ManageTagsPage() {
   if (!(await isAdmin())) redirect("/admin/login");
@@ -25,50 +16,80 @@ export default async function ManageTagsPage() {
   return (
     <div className="space-y-8 max-w-xl">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/admin"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-white/5 hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-              <Tags className="h-5 w-5 text-purple-400" />
-              Manage Tags
-            </h1>
-            <p className="mt-0.5 text-sm text-gray-500">{tags.length} tag{tags.length !== 1 ? "s" : ""} available</p>
-          </div>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/admin"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-white/5 hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+        <div>
+          <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
+            <Tags className="h-5 w-5 text-purple-400" />
+            Manage Tags
+          </h1>
+          <p className="mt-0.5 text-sm text-gray-500">
+            {tags.length} tag{tags.length !== 1 ? "s" : ""} available
+          </p>
         </div>
       </div>
 
       {/* Add tag form */}
-      <div className="rounded-2xl border border-white/5 bg-[#111111] p-5">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-500">Add new tag</p>
-        <form action={addTagAction} className="flex gap-2">
-          <input
-            name="tag"
-            type="text"
-            required
-            placeholder="e.g. Excel, Power Apps…"
-            className="flex-1 rounded-xl border border-white/8 bg-white/4 px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30"
-          />
-          <button
-            type="submit"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-500 active:scale-95"
-          >
-            <Plus className="h-4 w-4" />
-            Add
-          </button>
+      <div className="rounded-2xl border border-white/5 bg-[#111111] p-5 space-y-4">
+        <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
+          Add new tag
+        </p>
+        <form action={addTagAction} className="space-y-3">
+          <div className="flex gap-2">
+            <input
+              name="tag"
+              type="text"
+              required
+              placeholder="e.g. Excel, Power Apps…"
+              className="flex-1 rounded-xl border border-white/8 bg-white/4 px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30"
+            />
+            <button
+              type="submit"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-500 active:scale-95 shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+              Add
+            </button>
+          </div>
+
+          {/* Color picker */}
+          <div>
+            <p className="mb-2 text-xs text-gray-500">Choose a colour</p>
+            <div className="flex flex-wrap gap-2">
+              {COLOR_PRESETS.map((preset, i) => (
+                <label
+                  key={preset.key}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-full border border-white/8 px-3 py-1.5 text-xs text-gray-400 hover:border-white/20 hover:text-white has-[:checked]:border-purple-500/50 has-[:checked]:text-white has-[:checked]:bg-white/5"
+                >
+                  <input
+                    type="radio"
+                    name="color"
+                    value={preset.key}
+                    defaultChecked={i === 0}
+                    className="sr-only"
+                  />
+                  <span className={`h-2.5 w-2.5 rounded-full ${preset.dot}`} />
+                  {preset.label}
+                </label>
+              ))}
+            </div>
+          </div>
         </form>
       </div>
 
       {/* Tag list */}
       <div className="rounded-2xl border border-white/5 bg-[#111111] overflow-hidden">
         <div className="border-b border-white/5 px-5 py-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-600">Current tags</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-600">
+            Current tags
+          </p>
         </div>
+
         {tags.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Tags className="mb-3 h-7 w-7 text-gray-700" />
@@ -77,22 +98,49 @@ export default async function ManageTagsPage() {
         ) : (
           <ul className="divide-y divide-white/5">
             {tags.map((tag) => {
-              const deleteWithTag = deleteTagAction.bind(null, tag);
-              const color = TAG_COLORS[tag] ?? "bg-purple-500/15 text-purple-400 border-purple-500/25";
+              const deleteAction = deleteTagAction.bind(null, tag.name);
+              const updateAction = updateTagColorAction.bind(null, tag.name);
               return (
-                <li key={tag} className="flex items-center justify-between px-5 py-3">
-                  <span
-                    className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${color}`}
-                  >
-                    {tag}
-                  </span>
-                  <form action={deleteWithTag}>
+                <li key={tag.name} className="px-5 py-4 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span
+                      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${getCardCls(tag.color)}`}
+                    >
+                      {tag.name}
+                    </span>
+                    <form action={deleteAction}>
+                      <button
+                        type="submit"
+                        title={`Delete "${tag.name}"`}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-600 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </form>
+                  </div>
+
+                  <form action={updateAction} className="flex flex-wrap gap-1.5 items-center">
+                    {COLOR_PRESETS.map((preset) => (
+                      <label
+                        key={preset.key}
+                        className="flex cursor-pointer items-center gap-1 rounded-full border border-white/5 px-2 py-1 text-xs text-gray-500 hover:border-white/15 hover:text-gray-300 has-[:checked]:border-purple-500/40 has-[:checked]:text-white has-[:checked]:bg-white/5"
+                      >
+                        <input
+                          type="radio"
+                          name="color"
+                          value={preset.key}
+                          defaultChecked={tag.color === preset.key}
+                          className="sr-only"
+                        />
+                        <span className={`h-2 w-2 rounded-full ${preset.dot}`} />
+                        {preset.label}
+                      </label>
+                    ))}
                     <button
                       type="submit"
-                      title={`Delete "${tag}"`}
-                      className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-600 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                      className="ml-1 rounded-full border border-white/8 bg-white/4 px-3 py-1 text-xs text-gray-400 hover:text-white hover:border-white/20"
                     >
-                      <X className="h-3.5 w-3.5" />
+                      Save colour
                     </button>
                   </form>
                 </li>
@@ -103,7 +151,8 @@ export default async function ManageTagsPage() {
       </div>
 
       <p className="text-xs text-gray-600">
-        Deleting a tag removes it from the available list but does <strong className="text-gray-500">not</strong> remove it from existing posts.
+        Deleting a tag removes it from the available list but does{" "}
+        <strong className="text-gray-500">not</strong> remove it from existing posts.
       </p>
     </div>
   );

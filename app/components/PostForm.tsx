@@ -4,22 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import MarkdownRenderer from "@/app/components/MarkdownRenderer";
-
-const DEFAULT_COLOR = "border-purple-500/40 text-purple-400 bg-purple-500/10";
-
-const TAG_COLORS: Record<string, string> = {
-  "Power BI": "border-purple-500/40 text-purple-400 bg-purple-500/10",
-  SAP: "border-blue-500/40 text-blue-400 bg-blue-500/10",
-  Migration: "border-orange-500/40 text-orange-400 bg-orange-500/10",
-  "Lessons Learned": "border-amber-500/40 text-amber-400 bg-amber-500/10",
-  Fails: "border-red-500/40 text-red-400 bg-red-500/10",
-  Wins: "border-emerald-500/40 text-emerald-400 bg-emerald-500/10",
-  Teambuilding: "border-pink-500/40 text-pink-400 bg-pink-500/10",
-};
+import { getFormCls } from "@/lib/tagColors";
+import type { TagEntry } from "@/lib/tagColors";
 
 type Props = {
   action: (formData: FormData) => Promise<void>;
-  availableTags?: string[];
+  availableTags?: TagEntry[];
   defaultValues?: {
     slug?: string;
     title?: string;
@@ -258,7 +248,7 @@ function Field({
   );
 }
 
-function TagSelector({ defaultTags, availableTags }: { defaultTags: string[]; availableTags: string[] }) {
+function TagSelector({ defaultTags, availableTags }: { defaultTags: string[]; availableTags: TagEntry[] }) {
   const [selected, setSelected] = useState<string[]>(defaultTags);
 
   const toggle = (tag: string) =>
@@ -270,22 +260,21 @@ function TagSelector({ defaultTags, availableTags }: { defaultTags: string[]; av
     <div className="space-y-2">
       <input type="hidden" name="tags" value={selected.join(", ")} />
       <div className="flex flex-wrap gap-2">
-        {availableTags.map((tag) => {
-          const active = selected.includes(tag);
-          const color = TAG_COLORS[tag] ?? DEFAULT_COLOR;
+        {availableTags.map(({ name, color }) => {
+          const active = selected.includes(name);
           return (
             <button
-              key={tag}
+              key={name}
               type="button"
-              onClick={() => toggle(tag)}
+              onClick={() => toggle(name)}
               className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${
                 active
-                  ? color + " ring-1 ring-current/20"
+                  ? getFormCls(color) + " ring-1 ring-current/20"
                   : "border-white/8 text-gray-600 hover:border-white/15 hover:text-gray-400"
               }`}
             >
               {active && <span className="mr-1">✓</span>}
-              {tag}
+              {name}
             </button>
           );
         })}

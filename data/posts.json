@@ -1,0 +1,61 @@
+[
+  {
+    "slug": "week-1-first-day",
+    "title": "Week 1 — First Day, First Impressions & Getting Access to Everything",
+    "date": "2026-02-02",
+    "excerpt": "My first day as an intern: meeting the team, getting a mountain of system access requests approved, and staring at SAP for the first time.",
+    "tags": [
+      "Lessons Learned",
+      "SAP",
+      "Teambuilding"
+    ],
+    "featured": true,
+    "content": "## The First Day\n\nWalking into the office on day one was equal parts exciting and overwhelming. I had a badge, a laptop, and absolutely no idea what SAP was.\n\nMy supervisor gave me a quick tour and sat me down with a 40-page onboarding document. The first half was about company values. The second half was a list of systems I needed access to.\n\n## The Systems\n\nBy end of day one, I had submitted access requests for:\n\n- **SAP** (the main ERP system — I still did not fully understand what that meant)\n- **Power BI** (for reporting — this one I was at least vaguely familiar with)\n- The internal ticketing system\n- Two file servers\n\nIt took three days for all the access to come through. In the meantime, I watched onboarding videos and tried to understand what an ERP actually does.\n\n## First Impression of SAP\n\nWhen I finally got access to SAP, I opened the first transaction code I was shown — **ME21N** (create purchase order) — and stared at it for a good five minutes before asking for help.\n\nThe interface is a lot. But my colleague was patient and walked me through the basics. The logic behind it started to make sense once I understood *why* each field exists.\n\n## Key Takeaways\n\n- Do not panic when you do not understand something on day one. That is normal.\n- Ask questions early — everyone here expects it from interns.\n- SAP has its own language. Give yourself time to learn it."
+  },
+  {
+    "slug": "first-power-bi-dashboard",
+    "title": "Building My First Power BI Dashboard from a Real Dataset",
+    "date": "2026-02-09",
+    "excerpt": "I was handed a messy Excel export and told to turn it into a dashboard. Here is how I approached it, what I learned about DAX, and what I would do differently.",
+    "tags": [
+      "Power BI",
+      "Wins",
+      "Lessons Learned"
+    ],
+    "content": "## The Task\n\nMy supervisor dropped a file on my desk — an Excel export from SAP with about 3,000 rows of purchase order data — and asked me to build a dashboard showing spend by supplier, category, and month.\n\nI had used Power BI maybe twice before this, for a school project. This felt completely different.\n\n## Getting the Data In\n\nThe first step was connecting the Excel file to Power BI Desktop and cleaning the data in **Power Query**. The date column was formatted as text (classic), supplier names had inconsistent capitalisation, and two columns had been merged into one.\n\nPower Query split column and trim functions saved a lot of time here.\n\n## My First DAX Measure\n\nOnce the data was clean, I needed a few calculated values. My first real DAX measure:\n\n**Total Spend = SUM(Orders[Net Value])**\n\nSimple. But from there I built on it:\n\n**Spend YTD = CALCULATE([Total Spend], DATESYTD(Date[Date]))**\n\nThat one took me an hour to understand. The CALCULATE + DATESYTD pattern is everywhere in Power BI and once it clicked, a lot of other things started making sense too.\n\n## The Result\n\nI presented the dashboard the following Friday. Three visuals: a bar chart by supplier, a line chart by month, and a treemap by category. My supervisor asked me to add a slicer for department — which I had not thought of — and that turned out to be one of the most useful parts.\n\n## What I Would Do Differently\n\nCreate the **date table** at the start. I added it halfway through and had to redo several relationships. Lesson learned."
+  },
+  {
+    "slug": "understanding-sap-purchase-to-pay",
+    "title": "Understanding the Purchase-to-Pay Process in SAP",
+    "date": "2026-02-13",
+    "excerpt": "My supervisor walked me through the full P2P flow in SAP — from purchase requisition to invoice verification. Here is my breakdown of how it all connects.",
+    "tags": [
+      "SAP",
+      "Lessons Learned"
+    ],
+    "content": "## What is Purchase-to-Pay?\n\nBefore this internship I had never heard the term **Purchase-to-Pay (P2P)**. It refers to the full process a company goes through when buying something: identifying the need, getting approval, placing the order, receiving the goods, and finally paying the invoice.\n\nIn SAP, this entire flow is tracked and each step leaves a trail.\n\n## The Steps in SAP\n\nHere is the simplified version of what I learned:\n\n**1. Purchase Requisition (PR) — Transaction: ME51N**\nAn internal request to buy something. Created by the department that needs it.\n\n**2. Purchase Order (PO) — Transaction: ME21N**\nThe actual order sent to the vendor. Converts the PR into a formal commitment.\n\n**3. Goods Receipt (GR) — Transaction: MIGO**\nRecords that the physical goods (or service) have been received. This is what triggers the three-way match.\n\n**4. Invoice Verification — Transaction: MIRO**\nThe vendor invoice is entered here and matched against the PO and GR. If the three match, payment is approved.\n\n## The Three-Way Match\n\nThis was the concept that made the whole system click for me. SAP automatically checks:\n\n- What was **ordered** (PO)\n- What was **received** (GR)\n- What was **invoiced** (Invoice)\n\nIf they match within tolerance, the invoice is approved. If not, it gets blocked for review. It is an incredibly clean way to prevent overpayments and fraud.\n\n## What Surprised Me\n\nHow much of business process is really just good data hygiene. If a vendor sends the wrong invoice number, or a goods receipt is booked late, the whole flow gets delayed. The system is only as good as the people using it."
+  },
+  {
+    "slug": "migration-what-is-it",
+    "title": "What Even Is Data Migration? My First Explanation Attempt",
+    "date": "2026-02-17",
+    "excerpt": "After sitting in on two migration planning meetings, I tried to write down what data migration actually means in plain language. Here is my attempt.",
+    "tags": [
+      "Migration",
+      "Lessons Learned"
+    ],
+    "content": "## What I Knew Before\n\nBefore this internship, data migration to me meant moving files from one place to another. Copy, paste, done.\n\nI was wrong.\n\n## What Migration Actually Means in a Business Context\n\nData migration — as I now understand it — is the process of moving structured business data from one system to another while ensuring it stays **accurate, complete, and usable** in the new system.\n\nIn the project I am shadowing, the company is migrating master data (vendors, materials, customers) from an older system into SAP. That sounds simple. It is not.\n\n## The Challenges\n\n**1. Data quality**\nThe source data is often messy. Duplicate records, inconsistent formats, missing mandatory fields. Before you can migrate anything, you have to clean it.\n\n**2. Mapping**\nEvery field in the old system needs to map to a field in the new system. Sometimes they do not align perfectly. A field called Supplier Code in one system might need to split into two fields in SAP.\n\n**3. Validation**\nAfter migration, you have to verify that what arrived matches what you sent. Row counts, totals, spot checks.\n\n**4. Cutover planning**\nThe actual go live moment — when the old system is switched off and the new one takes over — has to be planned to the minute. You cannot have both running at the same time with live data.\n\n## My Takeaway\n\nMigration is 20% technical and 80% planning, communication, and data governance. The boring parts are actually the most important parts."
+  },
+  {
+    "slug": "failing-at-a-dax-measure",
+    "title": "The DAX Measure That Took Me Two Days to Get Right",
+    "date": "2026-02-20",
+    "excerpt": "I needed to calculate the previous month spend for a comparison card. What I thought was a simple measure turned into a two-day debugging session.",
+    "tags": [
+      "Power BI",
+      "Fails",
+      "Lessons Learned"
+    ],
+    "content": "## The Requirement\n\nA simple card visual: **current month spend vs previous month spend**, with a percentage change.\n\nI had already built Total Spend. Now I needed Previous Month Spend. How hard could it be?\n\n## Attempt 1 — Completely Wrong\n\nMy first try:\n\n**Prev Month = CALCULATE([Total Spend], PREVIOUSMONTH(Date[Date]))**\n\nThis returned blank. Every time. The problem: I was referencing the Date column directly instead of using a proper date table connected to my fact table. The relationship was not set up correctly.\n\n## Attempt 2 — Closer, Still Wrong\n\nAfter fixing the date table relationship:\n\n**Prev Month = CALCULATE([Total Spend], DATEADD(Date[Date], -1, MONTH))**\n\nThis returned numbers! Wrong numbers. In a filtered context (looking at only one supplier), it was not respecting the filter the way I expected. I did not fully understand **filter context** yet.\n\n## The Fix\n\nTwo days later, after reading the Microsoft DAX documentation:\n\n**Prev Month Spend = CALCULATE([Total Spend], DATEADD(Date[Date], -1, MONTH), ALL(Orders[Supplier]))**\n\nUnderstanding when to use ALL() to remove a filter context — while keeping others — was the missing piece.\n\n## What I Learned\n\nDAX looks deceptively simple. It is not. Filter context is everything, and until you understand it intuitively, you will keep getting wrong numbers that look right."
+  }
+]

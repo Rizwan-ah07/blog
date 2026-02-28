@@ -40,9 +40,9 @@ export default async function HomePage() {
   const tagColorMap = buildTagColorMap(tagEntries);
 
   return (
-    <div className="space-y-20">
+    <div className="space-y-12 md:space-y-20">
       {/* ── Hero ── */}
-      <section className="relative pt-8 pb-4">
+      <section className="relative overflow-hidden pt-6 pb-4 sm:pt-8">
         <div
           aria-hidden
           className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 h-[500px] w-[700px] rounded-full bg-purple-700/10 blur-3xl"
@@ -52,7 +52,7 @@ export default async function HomePage() {
             <Sparkles className="h-3.5 w-3.5" />
             Internship 2026
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-tight">
             Every Sprint.{" "}
             <span className="gradient-text">Every Lesson.</span>
             <br />
@@ -84,11 +84,10 @@ export default async function HomePage() {
 
       {/* ── What You'll Find ── */}
       <section>
-        <div className="mb-8 text-center">
+        <div className="mb-6 text-center sm:mb-8">
           <h2 className="text-2xl font-bold text-white">What You&apos;ll Find Here</h2>
-
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {highlights.map(({ icon: Icon, label, desc, color, bg }) => (
             <div key={label} className={`rounded-2xl border p-5 ${bg} flex flex-col gap-3`}>
               <div className={`w-fit rounded-lg border p-2 ${bg}`}>
@@ -106,7 +105,7 @@ export default async function HomePage() {
       {/* ── Featured Post ── */}
       {featured && (
       <section>
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-y-2">
           <div>
             <h2 className="text-2xl font-bold text-white">Featured Post</h2>
             <p className="mt-1 text-sm text-gray-500">Start here.</p>
@@ -121,7 +120,7 @@ export default async function HomePage() {
 
       {/* ── Latest Posts ── */}
       <section>
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-y-2">
           <div>
             <h2 className="text-2xl font-bold text-white">Latest Posts</h2>
             <p className="mt-1 text-sm text-gray-500">{allPosts.length} posts and counting.</p>
@@ -138,7 +137,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── CTA Banner ── */}
-      <section className="relative overflow-hidden rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-900/20 via-purple-800/10 to-transparent p-8 text-center">
+      <section className="relative overflow-hidden rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-900/20 via-purple-800/10 to-transparent p-5 sm:p-8 text-center">
         <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-purple-700/15 blur-3xl" />
         <div aria-hidden className="pointer-events-none absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-purple-700/10 blur-3xl" />
         <div className="relative">

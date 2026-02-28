@@ -15,12 +15,12 @@ export default function BlogPostCard({ post, featured = false, tagColorMap = {} 
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className={`group flex flex-col gap-3 rounded-2xl border border-white/5 bg-[#111111] p-5 transition-all hover:border-purple-500/30 hover:bg-[#141414] ${
-        featured ? "sm:flex-row sm:gap-6 sm:p-6" : ""
+      className={`group flex flex-col gap-3 rounded-2xl border border-white/5 bg-[#111111] p-4 sm:p-5 transition-all hover:border-purple-500/30 hover:bg-[#141414] ${
+        featured ? "md:flex-row md:gap-6 md:p-6" : ""
       }`}
     >
       {/* Tags row */}
-      <div className={`flex flex-wrap gap-1.5 ${featured ? "sm:hidden" : ""}`}>
+      <div className={`flex flex-wrap gap-1.5 ${featured ? "md:hidden" : ""}`}>
         {post.tags.map((tag) => (
           <span
             key={tag}
@@ -36,7 +36,7 @@ export default function BlogPostCard({ post, featured = false, tagColorMap = {} 
 
       {/* Featured: left column with tags */}
       {featured && (
-        <div className="hidden sm:flex sm:flex-col sm:justify-between sm:w-48 sm:shrink-0">
+        <div className="hidden md:flex md:flex-col md:justify-between md:w-48 md:shrink-0">
           <div className="flex flex-wrap gap-1.5">
             {post.tags.map((tag) => (
               <span
@@ -63,13 +63,13 @@ export default function BlogPostCard({ post, featured = false, tagColorMap = {} 
           <div className="flex items-start justify-between gap-3">
             <h3
               className={`font-bold leading-snug text-white group-hover:text-purple-200 transition-colors ${
-                featured ? "text-xl sm:text-2xl" : "text-base sm:text-lg"
+                featured ? "text-xl md:text-2xl" : "text-base sm:text-lg"
               }`}
             >
               {post.title}
             </h3>
             {featured && (
-              <span className="hidden sm:inline shrink-0 rounded-full bg-purple-500/20 border border-purple-500/30 px-2 py-0.5 text-xs text-purple-300">
+              <span className="hidden md:inline shrink-0 rounded-full bg-purple-500/20 border border-purple-500/30 px-2 py-0.5 text-xs text-purple-300">
                 Featured
               </span>
             )}
@@ -86,7 +86,7 @@ export default function BlogPostCard({ post, featured = false, tagColorMap = {} 
           </span>
         )}
         {featured && (
-          <span className="flex items-center gap-1.5 text-xs text-gray-500 pt-2 border-t border-white/5 sm:hidden">
+          <span className="flex items-center gap-1.5 text-xs text-gray-500 pt-2 border-t border-white/5 md:hidden">
             <Calendar className="h-3.5 w-3.5" />
             {formatDate(post.date)}
           </span>

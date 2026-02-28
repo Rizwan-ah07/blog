@@ -66,7 +66,7 @@ export async function createPostAction(formData: FormData) {
   const tagsRaw = formData.get("tags")?.toString() ?? "";
   const featured = formData.get("featured") === "on";
 
-  createPost({ slug, title, date, excerpt, tags: parseTags(tagsRaw), content, featured });
+  await createPost({ slug, title, date, excerpt, tags: parseTags(tagsRaw), content, featured });
 
   revalidatePath("/blog");
   revalidatePath("/");
@@ -84,7 +84,7 @@ export async function updatePostAction(slug: string, formData: FormData) {
   const featured = formData.get("featured") === "on";
   const newSlug = formData.get("slug")?.toString().trim() || slug;
 
-  updatePost(slug, {
+  await updatePost(slug, {
     slug: newSlug,
     title,
     date,
@@ -103,7 +103,7 @@ export async function updatePostAction(slug: string, formData: FormData) {
 
 export async function deletePostAction(slug: string) {
   if (!(await isAdmin())) redirect("/admin/login");
-  deletePost(slug);
+  await deletePost(slug);
   revalidatePath("/blog");
   revalidatePath("/");
   redirect("/blog");
@@ -115,20 +115,20 @@ export async function addTagAction(formData: FormData) {
   if (!(await isAdmin())) redirect("/admin/login");
   const name  = formData.get("tag")?.toString().trim()   ?? "";
   const color = formData.get("color")?.toString().trim() ?? "purple";
-  if (name) addTag(name, color);
+  if (name) await addTag(name, color);
   revalidatePath("/admin/tags");
 }
 
 export async function updateTagColorAction(name: string, formData: FormData) {
   if (!(await isAdmin())) redirect("/admin/login");
   const color = formData.get("color")?.toString().trim() ?? "purple";
-  updateTagColor(name, color);
+  await updateTagColor(name, color);
   revalidatePath("/admin/tags");
 }
 
 export async function deleteTagAction(tag: string) {
   if (!(await isAdmin())) redirect("/admin/login");
-  deleteTag(tag);
+  await deleteTag(tag);
   revalidatePath("/admin/tags");
 }
 
@@ -136,6 +136,6 @@ export async function deleteTagAction(tag: string) {
 
 export async function saveAboutAction(data: AboutData) {
   if (!(await isAdmin())) redirect("/admin/login");
-  saveAbout(data);
+  await saveAbout(data);
   revalidatePath("/about");
 }

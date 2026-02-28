@@ -17,14 +17,17 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const [post, admin, tagEntries] = await Promise.all([
+    getPostBySlug(slug),
+    isAdmin(),
+    getAllAvailableTags(),
+  ]);
   if (!post) notFound();
 
-  const [admin, tagEntries] = await Promise.all([isAdmin(), Promise.resolve(getAllAvailableTags())]);
   const tagColorMap = buildTagColorMap(tagEntries);
   const deleteWithSlug = deletePostAction.bind(null, slug);
 
-  const related = getAllPosts()
+  const related = (await getAllPosts())
     .filter((p) => p.slug !== slug && p.tags.some((t) => post.tags.includes(t)))
     .slice(0, 3);
 

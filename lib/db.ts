@@ -1,142 +1,134 @@
-import path from "path";
-import fs from "fs";
+import clientPromise from "./mongodb";
 import type { Post } from "./posts";
 import type { TagEntry } from "./tagColors";
 import { defaultColor } from "./tagColors";
 
-const DB_PATH = path.join(process.cwd(), "data", "posts.json");
-const TAGS_PATH = path.join(process.cwd(), "data", "tags.json");
+// ── collection helpers ────────────────────────────────────────────────────────
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-
-function readPosts(): Post[] {
-  if (!fs.existsSync(DB_PATH)) return [];
-  try {
-    return JSON.parse(fs.readFileSync(DB_PATH, "utf-8")) as Post[];
-  } catch {
-    return [];
-  }
+async function postsCol() {
+  const client = await clientPromise;
+  return client.db("portfolio").collection("rizwan-posts");
 }
 
-function writePosts(posts: Post[]): void {
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-  fs.writeFileSync(DB_PATH, JSON.stringify(posts, null, 2), "utf-8");
+async function tagsCol() {
+  const client = await clientPromise;
+  return client.db("portfolio").collection("rizwan-tags");
 }
 
-// ── public API ────────────────────────────────────────────────────────────────
+async function aboutCol() {
+  const client = await clientPromise;
+  return client.db("portfolio").collection("rizwan-about");
+}
+
+function stripId<T>(doc: T & { _id?: unknown }): T {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { _id, ...rest } = doc as Record<string, unknown>;
+  return rest as T;
+}
+
+// ── Posts ─────────────────────────────────────────────────────────────────────
 
 /** Public feed — hides posts dated in the future. */
-export function getAllPosts(): Post[] {
-  const today = new Date();
-  today.setHours(23, 59, 59, 999); // include posts dated today
-  return readPosts()
-    .filter((p) => new Date(p.date) <= today)
+export async function getAllPosts(): Promise<Post[]> {
+  const col = await postsCol();
+  const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+  const docs = await col.find({ date: { $lte: today } }).toArray();
+  return docs
+    .map((d) => stripId(d) as unknown as Post)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 /** Admin feed — shows all posts including future-dated ones. */
-export function getAllPostsAdmin(): Post[] {
-  return readPosts().sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+export async function getAllPostsAdmin(): Promise<Post[]> {
+  const col = await postsCol();
+  const docs = await col.find({}).toArray();
+  return docs
+    .map((d) => stripId(d) as unknown as Post)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-export function getPostBySlug(slug: string): Post | undefined {
-  return readPosts().find((p) => p.slug === slug);
+export async function getPostBySlug(slug: string): Promise<Post | undefined> {
+  const col = await postsCol();
+  const doc = await col.findOne({ slug });
+  return doc ? (stripId(doc) as unknown as Post) : undefined;
 }
 
-export function getFeaturedPost(): Post | undefined {
-  const posts = getAllPosts(); // respects publish date
+export async function getFeaturedPost(): Promise<Post | undefined> {
+  const posts = await getAllPosts();
   return posts.find((p) => p.featured) ?? posts[0];
 }
 
-export function getAllTags(): string[] {
+export async function getAllTags(): Promise<string[]> {
+  const posts = await getAllPosts();
   const tagSet = new Set<string>();
-  readPosts().forEach((p) => p.tags.forEach((t) => tagSet.add(t)));
+  posts.forEach((p) => p.tags.forEach((t) => tagSet.add(t)));
   return Array.from(tagSet);
 }
 
-// ── tag store (data/tags.json) ────────────────────────────────────────────────
-
-function readTags(): TagEntry[] {
-  if (!fs.existsSync(TAGS_PATH)) return [];
-  try {
-    const raw = JSON.parse(fs.readFileSync(TAGS_PATH, "utf-8"));
-    // Handle legacy string[] format
-    if (Array.isArray(raw) && raw.length > 0 && typeof raw[0] === "string") {
-      return (raw as string[]).map((name, i) => ({ name, color: defaultColor(i) }));
-    }
-    return raw as TagEntry[];
-  } catch {
-    return [];
-  }
+export async function createPost(post: Post): Promise<void> {
+  const col = await postsCol();
+  const existing = await col.findOne({ slug: post.slug });
+  if (existing) throw new Error(`Slug "${post.slug}" already exists`);
+  await col.insertOne(post as Record<string, unknown>);
 }
 
-function writeTags(tags: TagEntry[]): void {
-  fs.mkdirSync(path.dirname(TAGS_PATH), { recursive: true });
-  fs.writeFileSync(TAGS_PATH, JSON.stringify(tags, null, 2), "utf-8");
+export async function updatePost(
+  slug: string,
+  updates: Partial<Post>
+): Promise<Post> {
+  const col = await postsCol();
+  const result = await col.findOneAndUpdate(
+    { slug },
+    { $set: updates },
+    { returnDocument: "after" }
+  );
+  if (!result) throw new Error("Post not found");
+  return stripId(result) as unknown as Post;
 }
 
-export function getAllAvailableTags(): TagEntry[] {
-  return readTags();
+export async function deletePost(slug: string): Promise<void> {
+  const col = await postsCol();
+  const result = await col.deleteOne({ slug });
+  if (result.deletedCount === 0) throw new Error("Post not found");
 }
 
-export function addTag(name: string, color: string): void {
-  const tags = readTags();
+// ── Tags ──────────────────────────────────────────────────────────────────────
+
+export async function getAllAvailableTags(): Promise<TagEntry[]> {
+  const col = await tagsCol();
+  const docs = await col.find({}).toArray();
+  return docs.map((d, i) => {
+    const stripped = stripId(d) as Record<string, unknown>;
+    return {
+      name: String(stripped.name ?? ""),
+      color: String(stripped.color ?? defaultColor(i)),
+    };
+  });
+}
+
+export async function addTag(name: string, color: string): Promise<void> {
+  const col = await tagsCol();
   const trimmed = name.trim();
-  if (!trimmed || tags.some((t) => t.name === trimmed)) return;
-  tags.push({ name: trimmed, color });
-  writeTags(tags);
+  if (!trimmed) return;
+  const existing = await col.findOne({ name: trimmed });
+  if (existing) return;
+  await col.insertOne({ name: trimmed, color });
 }
 
-export function updateTagColor(name: string, color: string): void {
-  const tags = readTags();
-  const entry = tags.find((t) => t.name === name);
-  if (entry) {
-    entry.color = color;
-    writeTags(tags);
-  }
+export async function updateTagColor(
+  name: string,
+  color: string
+): Promise<void> {
+  const col = await tagsCol();
+  await col.updateOne({ name }, { $set: { color } });
 }
 
-export function deleteTag(name: string): void {
-  writeTags(readTags().filter((t) => t.name !== name));
+export async function deleteTag(name: string): Promise<void> {
+  const col = await tagsCol();
+  await col.deleteOne({ name });
 }
 
-export function createPost(post: Post): void {
-  const posts = readPosts();
-  if (posts.find((p) => p.slug === post.slug)) {
-    throw new Error(`Slug "${post.slug}" already exists`);
-  }
-  posts.unshift(post);
-  writePosts(posts);
-}
-
-export function updatePost(slug: string, updates: Partial<Post>): Post {
-  const posts = readPosts();
-  const idx = posts.findIndex((p) => p.slug === slug);
-  if (idx === -1) throw new Error("Post not found");
-  posts[idx] = { ...posts[idx], ...updates };
-  writePosts(posts);
-  return posts[idx];
-}
-
-export function deletePost(slug: string): void {
-  const posts = readPosts();
-  const filtered = posts.filter((p) => p.slug !== slug);
-  if (filtered.length === posts.length) throw new Error("Post not found");
-  writePosts(filtered);
-}
-
-export function slugify(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 80);
-}
-
-// ── About page data ──────────────────────────────────────────────────────────
+// ── About ─────────────────────────────────────────────────────────────────────
 
 export interface AboutData {
   name: string;
@@ -155,37 +147,47 @@ export interface AboutData {
   learningGoals: string[];
 }
 
-const ABOUT_PATH = path.join(process.cwd(), "data", "about.json");
-
 const ABOUT_DEFAULTS: AboutData = {
   name: "Your Name",
   role: "Business & Data Intern",
-  period: "Stage / WPL 2026",
+  period: "Internship 2026",
   linkedinUrl: "https://linkedin.com/in/your-profile",
   company: "[Company Name]",
   location: "[City, Country]",
   locationSub: "On-site / Hybrid",
   jobTitle: "Business & Data Intern",
-  jobSub: "Stage / WPL position",
+  jobSub: "Internship position",
   duration: "Feb – Jun 2026",
   durationSub: "5 months",
-  story: [
-    "I'm a student currently completing my Stage/WPL internship as part of my ICT programme.",
-  ],
+  story: ["I'm a student completing my internship as part of my ICT programme."],
   skills: [{ label: "Power BI & DAX", level: 60 }],
   learningGoals: ["Build functional Power BI dashboards from real business data"],
 };
 
-export function getAbout(): AboutData {
-  if (!fs.existsSync(ABOUT_PATH)) return ABOUT_DEFAULTS;
-  try {
-    return JSON.parse(fs.readFileSync(ABOUT_PATH, "utf-8")) as AboutData;
-  } catch {
-    return ABOUT_DEFAULTS;
+export async function getAbout(): Promise<AboutData> {
+  const col = await aboutCol();
+  const doc = await col.findOne({});
+  if (!doc) return ABOUT_DEFAULTS;
+  return stripId(doc) as unknown as AboutData;
+}
+
+export async function saveAbout(data: AboutData): Promise<void> {
+  const col = await aboutCol();
+  const count = await col.countDocuments({});
+  if (count === 0) {
+    await col.insertOne(data as unknown as Record<string, unknown>);
+  } else {
+    await col.replaceOne({}, data as unknown as Record<string, unknown>);
   }
 }
 
-export function saveAbout(data: AboutData): void {
-  fs.mkdirSync(path.dirname(ABOUT_PATH), { recursive: true });
-  fs.writeFileSync(ABOUT_PATH, JSON.stringify(data, null, 2), "utf-8");
+// ── Utilities ─────────────────────────────────────────────────────────────────
+
+export function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 80);
 }

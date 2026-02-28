@@ -31,10 +31,13 @@ const highlights = [
 ];
 
 export default async function HomePage() {
-  const allPosts = getAllPosts();
-  const featured = getFeaturedPost();
+  const [allPosts, featured, tagEntries] = await Promise.all([
+    getAllPosts(),
+    getFeaturedPost(),
+    getAllAvailableTags(),
+  ]);
   const latest = allPosts.slice(0, 1);
-  const tagColorMap = buildTagColorMap(getAllAvailableTags());
+  const tagColorMap = buildTagColorMap(tagEntries);
 
   return (
     <div className="space-y-20">

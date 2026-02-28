@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AboutPage() {
   const [data, admin] = await Promise.all([
-    Promise.resolve(getAbout()),
+    getAbout(),
     isAdmin(),
   ]);
 

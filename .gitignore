@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/naila-portfolio
 /.pnp
 .pnp.*
 .yarn/*
@@ -39,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# separate projects in this repo
+naila-portfolio/

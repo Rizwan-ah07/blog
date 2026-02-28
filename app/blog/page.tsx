@@ -6,8 +6,8 @@ export const dynamic = "force-dynamic";
 
 export default async function BlogPage() {
   const [posts, tagEntries, admin] = await Promise.all([
-    Promise.resolve(getAllPosts()),
-    Promise.resolve(getAllAvailableTags()),
+    getAllPosts(),
+    getAllAvailableTags(),
     isAdmin(),
   ]);
 

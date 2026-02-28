@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function ManageTagsPage() {
   if (!(await isAdmin())) redirect("/admin/login");
 
-  const tags = getAllAvailableTags();
+  const tags = await getAllAvailableTags();
 
   return (
     <div className="space-y-8 max-w-xl">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import MarkdownRenderer from "@/app/components/MarkdownRenderer";
@@ -42,7 +43,6 @@ export default function PostForm({
   const [title, setTitle] = useState(defaultValues.title ?? "");
   const [slug, setSlug] = useState(defaultValues.slug ?? "");
   const [slugManual, setSlugManual] = useState(!!defaultValues.slug);
-  const [pending, setPending] = useState(false);
   const [preview, setPreview] = useState(false);
   const [content, setContent] = useState(defaultValues.content ?? "");
 
@@ -50,16 +50,8 @@ export default function PostForm({
     if (!slugManual) setSlug(toSlug(title));
   }, [title, slugManual]);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setPending(true);
-    const fd = new FormData(e.currentTarget);
-    await action(fd);
-    setPending(false);
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form action={action} className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <Link
@@ -69,14 +61,7 @@ export default function PostForm({
           <ArrowLeft className="h-4 w-4" />
           Back
         </Link>
-        <button
-          type="submit"
-          disabled={pending}
-          className="inline-flex items-center gap-2 rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-purple-500 disabled:opacity-60 active:scale-95"
-        >
-          {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-          {submitLabel}
-        </button>
+        <SubmitButton label={submitLabel} />
       </div>
 
       {/* Main content grid */}
@@ -288,3 +273,17 @@ function TagSelector({ defaultTags, availableTags }: { defaultTags: string[]; av
 
 const inputCls =
   "w-full rounded-xl border border-white/8 bg-white/4 px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30";
+
+function SubmitButton({ label }: { label: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex items-center gap-2 rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-purple-500 disabled:opacity-60 active:scale-95"
+    >
+      {pending && <Loader2 className="h-4 w-4 animate-spin" />}
+      {label}
+    </button>
+  );
+}

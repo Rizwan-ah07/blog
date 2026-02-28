@@ -4,9 +4,11 @@ import { createPostAction } from "@/app/actions";
 import { getAllAvailableTags } from "@/lib/db";
 import PostForm from "@/app/components/PostForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewPostPage() {
   if (!(await isAdmin())) redirect("/admin/login");
-  const availableTags = getAllAvailableTags();
+  const availableTags = await getAllAvailableTags();
 
   return (
     <div className="space-y-6">

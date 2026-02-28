@@ -4,6 +4,8 @@ import { getPostBySlug, getAllAvailableTags } from "@/lib/db";
 import { updatePostAction } from "@/app/actions";
 import PostForm from "@/app/components/PostForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function EditPostPage({
   params,
 }: {
@@ -12,7 +14,10 @@ export default async function EditPostPage({
   if (!(await isAdmin())) redirect("/admin/login");
 
   const { slug } = await params;
-  const [post, availableTags] = [getPostBySlug(slug), getAllAvailableTags()];
+  const [post, availableTags] = await Promise.all([
+    getPostBySlug(slug),
+    getAllAvailableTags(),
+  ]);
   if (!post) notFound();
 
   const actionWithSlug = updatePostAction.bind(null, slug);

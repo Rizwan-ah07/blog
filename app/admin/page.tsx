@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   if (!(await isAdmin())) redirect("/admin/login");
 
-  const posts = getAllPostsAdmin();
+  const posts = await getAllPostsAdmin();
 
   return (
     <div className="space-y-6">

@@ -48,7 +48,7 @@
   },
   {
     "slug": "failing-at-a-dax-measure",
-    "title": "The DAX Measure That Took Me Two Days to Get Right",
+    "title": "The DAX Measure That Took Me Two Days to d",
     "date": "2026-02-20",
     "excerpt": "I needed to calculate the previous month spend for a comparison card. What I thought was a simple measure turned into a two-day debugging session.",
     "tags": [
@@ -56,6 +56,7 @@
       "Fails",
       "Lessons Learned"
     ],
-    "content": "## The Requirement\n\nA simple card visual: **current month spend vs previous month spend**, with a percentage change.\n\nI had already built Total Spend. Now I needed Previous Month Spend. How hard could it be?\n\n## Attempt 1 — Completely Wrong\n\nMy first try:\n\n**Prev Month = CALCULATE([Total Spend], PREVIOUSMONTH(Date[Date]))**\n\nThis returned blank. Every time. The problem: I was referencing the Date column directly instead of using a proper date table connected to my fact table. The relationship was not set up correctly.\n\n## Attempt 2 — Closer, Still Wrong\n\nAfter fixing the date table relationship:\n\n**Prev Month = CALCULATE([Total Spend], DATEADD(Date[Date], -1, MONTH))**\n\nThis returned numbers! Wrong numbers. In a filtered context (looking at only one supplier), it was not respecting the filter the way I expected. I did not fully understand **filter context** yet.\n\n## The Fix\n\nTwo days later, after reading the Microsoft DAX documentation:\n\n**Prev Month Spend = CALCULATE([Total Spend], DATEADD(Date[Date], -1, MONTH), ALL(Orders[Supplier]))**\n\nUnderstanding when to use ALL() to remove a filter context — while keeping others — was the missing piece.\n\n## What I Learned\n\nDAX looks deceptively simple. It is not. Filter context is everything, and until you understand it intuitively, you will keep getting wrong numbers that look right."
+    "content": "## The Requirement\r\n\r\nA simple card visual: **current month spend vs previous month spend**, with a percentage change.\r\n\r\nI had already built Total Spend. Now I needed Previous Month Spend. How hard could it be?\r\n\r\n## Attempt 1 — Completely Wrong\r\n\r\nMy first try:\r\n\r\n**Prev Month = CALCULATE([Total Spend], PREVIOUSMONTH(Date[Date]))**\r\n\r\nThis returned blank. Every time. The problem: I was referencing the Date column directly instead of using a proper date table connected to my fact table. The relationship was not set up correctly.\r\n\r\n## Attempt 2 — Closer, Still Wrong\r\n\r\nAfter fixing the date table relationship:\r\n\r\n**Prev Month = CALCULATE([Total Spend], DATEADD(Date[Date], -1, MONTH))**\r\n\r\nThis returned numbers! Wrong numbers. In a filtered context (looking at only one supplier), it was not respecting the filter the way I expected. I did not fully understand **filter context** yet.\r\n\r\n## The Fix\r\n\r\nTwo days later, after reading the Microsoft DAX documentation:\r\n\r\n**Prev Month Spend = CALCULATE([Total Spend], DATEADD(Date[Date], -1, MONTH), ALL(Orders[Supplier]))**\r\n\r\nUnderstanding when to use ALL() to remove a filter context — while keeping others — was the missing piece.\r\n\r\n## What I Learned\r\n\r\nDAX looks deceptively simple. It is not. Filter context is everything, and until you understand it intuitively, you will keep getting wrong numbers that look right.",
+    "featured": false
   }
 ]

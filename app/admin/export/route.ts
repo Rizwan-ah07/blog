@@ -6,6 +6,16 @@ import { isAdmin } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
+function normalizeText(value: string): string {
+  return value
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u2018\u2019\u2032]/g, "'")
+    .replace(/[\u201C\u201D\u2033]/g, '"')
+    .replace(/[\u2013\u2014]/g, "-")
+    .replace(/\u00A0/g, " ")
+    .replace(/[^\x00-\x7F]/g, "");
+}
+
 function stripMarkdown(value: string): string {
   return value
     .replace(/```[\s\S]*?```/g, "")
@@ -47,11 +57,11 @@ export async function GET(request: Request) {
     }
     doc.moveDown(0.5);
     if (post.excerpt) {
-      doc.fontSize(11).fillColor("#000000").text(stripMarkdown(post.excerpt));
+      doc.fontSize(11).fillColor("#000000").text(normalizeText(stripMarkdown(post.excerpt)));
       doc.moveDown(0.5);
     }
     if (post.content) {
-      doc.fontSize(11).fillColor("#000000").text(stripMarkdown(post.content));
+      doc.fontSize(11).fillColor("#000000").text(normalizeText(stripMarkdown(post.content)));
     }
 
     if (index < posts.length - 1) {

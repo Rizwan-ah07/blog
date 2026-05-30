@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/**": ["./data/**"],
   },
+  serverExternalPackages: ["pdfkit"],
 };
 
 export default nextConfig;

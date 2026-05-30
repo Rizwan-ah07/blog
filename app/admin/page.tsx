@@ -4,7 +4,7 @@ import { isAdmin } from "@/lib/auth";
 import { getAllPostsAdmin } from "@/lib/db";
 import { formatDate } from "@/lib/posts";
 import { logoutAction } from "@/app/actions";
-import { PlusCircle, Pencil, LogOut, FileText, Tags } from "lucide-react";
+import { PlusCircle, Pencil, LogOut, FileText, Tags, FileDown } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +22,13 @@ export default async function AdminPage() {
           <p className="mt-1 text-sm text-gray-500">{posts.length} post{posts.length !== 1 ? "s" : ""} in the database</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/admin/export"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-gray-300 hover:border-purple-500/30 hover:text-purple-300"
+          >
+            <FileDown className="h-4 w-4" />
+            <span>Export PDF</span>
+          </Link>
           <Link
             href="/admin/tags"
             className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-gray-300 hover:border-purple-500/30 hover:text-purple-300"
